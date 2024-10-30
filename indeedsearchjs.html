@@ -1,0 +1,75 @@
+<!-- indeed.com api click tracking -->
+<script type="text/javascript" src="http://www.indeed.com/ads/apiresults.js"></script>
+
+<script type="text/javascript">
+// bind events
+jQuery(document).ready(function($) {
+  // search button clicked
+  jQuery("input[name='indeedsearchbutton']").click( function() {
+    indeedsearchbusy();
+    indeedsearchcall();
+  })
+
+  // reset page if query changes
+  jQuery("input[name='q']").change( function() {
+    jQuery("input[name='start']").val(1);
+  })
+
+  // reset page if location changes
+  jQuery("input[name='l']").change( function() {
+    jQuery("input[name='start']").val(1);
+  })
+
+  if( autosearch ) {
+    indeedsearchbusy();
+    indeedsearchcall();
+  }
+})
+
+// pagination set start position
+function setstart(s) {
+  jQuery("input[name='start']").val(s);
+  indeedsearchbusy();
+  indeedsearchcall();
+}
+
+// get json data from inputs for ajax call
+function getdata() {
+  var d = {
+      action: 'indeedcallback',
+      q: (jQuery("input[name='q']").length != 0 ? jQuery("input[name='q']").val() : jQuery("select[name='q']").val()),
+      l: jQuery("input[name='l']").val(),
+      start: jQuery("input[name='start']").val() 
+    }
+  return d;
+}
+
+// display json results from ajax call
+function indeeddisplayresults(resultsjson) {
+  var rpage = "";
+  if( resultsjson.pagination ) rpage += resultsjson.pagination;
+
+  if( resultsjson.html ) rpage += resultsjson.html;
+
+  if( resultsjson.pagination ) rpage += resultsjson.pagination;
+
+  jQuery("div#indeedsearchresults").html(rpage);
+}
+
+// ajax call to search indeed
+function indeedsearchcall() {
+  var data = getdata();
+  jQuery.post(wpajaxurl, data, function(response) {
+    resultjson = eval("(" + response + ")");
+    if( resultjson ) {
+      indeeddisplayresults(resultjson);
+    }
+  })
+}
+
+// display busy symbol in search results
+function indeedsearchbusy() {
+  var imgsrc = wpsiteurl + '/wp-content/plugins/indeed-api/busy.gif';
+  jQuery("div#indeedsearchresults").html('<p style="text-align: center;"><img src="' + imgsrc + '" /></p>');
+}
+</script>
